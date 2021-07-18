@@ -59,14 +59,14 @@
     </div>
 </div>
 <figure class="highcharts-figure">
-    <div id="container"></div>
+    @*<div id="container"></div>*@
     @*<p class="highcharts-description">
             This chart shows the use of a logarithmic y-axis. Logarithmic axes can
             be useful when dealing with data with spikes or large value gaps,
             as they allow variance in the smaller values to remain visible.
         </p>*@
     <div id="container2">
-
+        deneme
 
     </div>
 </figure>
@@ -129,16 +129,24 @@
                         },
                         series: [{}]
                     };
-                    //options.series[0].data = [];
+
+                    var activeCases = [];
+
+                    for (var i = 0; i < arr.length; i++) {
+                        console.log("patates2,", arr[i]);
+                        activeCases.push([arr[i].Date, arr[i].Cases]);
+                    }
+
+                    options.series[0].data = activeCases;
 
                     var chart = new Highcharts.Chart(options);
 
-                    for (var i = 0; i < arr.length; i++) {
+                    /*for (var i = 0; i < arr.length; i++) {
                         chart.series[0].addPoint({
                             x: arr[i].Date,
                             y: arr[i].Cases
-                        }, false);
-                    }
+                        }, true);
+                    }*/
 
                     console.log("points",chart.series[0]);
 
@@ -170,16 +178,12 @@
                             return;
                         }
 
-                        var activeCases = [];
                         //var newArray = dizi.map(Element => Element.Active);
                         var arr = parsedValue;
-                       /* console.log("Now here i am!", arr.Value);
-                        for (var i = 0; i < arr.Value.length; i++) {
-                            console.log("patates,", arr.Value[i]);
-                            activeCases.push(arr.Value[i].Active);
-                        }
-                        console.log("aktive", activeCases);*/
+                        console.log("Now here i am!", arr.Value);
+                        var caseArr = [];
 
+                        
                         var options = {
                             chart: {
                                 renderTo: 'container2',
@@ -188,22 +192,27 @@
                             series: [{}]
                         };
 
-                        options.series[0].data = [];
-                        var chart = new Highcharts.Chart(options);
 
 
                         if (selectedGraphic == 2) {
                             // last 30 days active cases -does not have startdate and enddate-
+
                             for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Active]);
+                            }
+
+                            /*for (var i = 0; i < arr.Value.length; i++) {
                                 chart.series[0].addPoint({
                                     x: arr.Value[i].Date,
                                     y: arr.Value[i].Active
                                 }, false);
 
-                            }
+                            }*/
                         } else if (selectedGraphic == 3) {
                             // last 30 days recovery -does not have startdate and enddate-
-
+                            for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Recovered]);
+                            }/*
                             for (var i = 0; i < arr.Value.length; i++) {
                                 chart.series[0].addPoint({
 
@@ -211,10 +220,12 @@
                                     y: arr.Value[i].Recovered
                                 }, false);
 
-                            }
+                            }*/
                         } else if (selectedGraphic == 4) {
                             // last 30 days deaths -does not have startdate and enddate-
-
+                            for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Deaths]);
+                            }/*
                             for (var i = 0; i < arr.Value.length; i++) {
                                 chart.series[0].addPoint({
 
@@ -222,8 +233,13 @@
                                     y: arr.Value[i].Deaths
                                 }, false);
 
-                            }
+                            }*/
                         }
+                        console.log("caseArr:", caseArr);
+                        options.series[0].data = caseArr;
+                        var chart = new Highcharts.Chart(options);
+
+
                         console.log("points", chart.series[0]);
 
                         chart.redraw();

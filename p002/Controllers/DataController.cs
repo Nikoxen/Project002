@@ -29,10 +29,33 @@ namespace p002.Controllers
         public ActionResult DailyByCountry(DailyByCountryRequest request)
         {
             var response = new DailyByCountryResponse();
+            request.StartDate = request.StartDate.AddDays(-1);
+            if(request.EndDate.Date < DateTime.Now.Date)
+            {
+                request.EndDate.AddDays(1);
+            }
             response.Value = _covidApiService.DailyByCountryGet(request);
+            
+
             if(response.Value == null)
             {
                 response.ErrorList.Add("Bir hata yasandi!");
+            }
+            else{
+                List<int> caseList = new List<int>();
+                for (int i = 1; i < response.Value.Count - 1; i++)
+                {
+                    var deneme = i;
+                    var curr = response.Value[i].Cases;
+                    var prev = response.Value[i-1].Cases;
+                    caseList.Add(response.Value[i].Cases - response.Value[i - 1].Cases);
+                }
+                for (int i = 1; i < response.Value.Count - 1; i++)
+                {
+                    response.Value[i].Cases = caseList[i - 1];
+                }
+
+                response.Value = response.Value.GetRange(1, response.Value.Count - 2);
             }
             return Json(JsonConvert.SerializeObject(response), JsonRequestBehavior.AllowGet);
         }
