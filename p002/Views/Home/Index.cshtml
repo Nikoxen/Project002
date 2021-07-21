@@ -66,7 +66,7 @@
             as they allow variance in the smaller values to remain visible.
         </p>*@
     <div id="container2">
-        deneme
+        
 
     </div>
 </figure>
@@ -74,6 +74,8 @@
 
 <script type="text/javascript">
 
+    document.getElementById("datepickerstart").disabled = true;
+    document.getElementById("datepickerend").disabled = true;
     $(document).ready(function () {
         $('.input-group.date').datepicker({ format: "dd.mm.yyyy", uiLibrary: 'bootstrap4'});
 
@@ -104,6 +106,19 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
+        $("#graphic-picker")[0].addEventListener("change", function (e) {
+            if(["1"].indexOf(e.target.value) != -1)
+            {
+                document.getElementById("datepickerstart").disabled = false;
+                document.getElementById("datepickerend").disabled = false;
+            }
+            else {
+                document.getElementById("datepickerstart").disabled = true;
+                document.getElementById("datepickerend").disabled = true;
+            }
+        });
+
+
         console.log($("#btn"));
         $("#btn").click(function () {
             var selectedGraphic = $("#graphic-picker").val();
@@ -112,6 +127,12 @@
             var endDate = $("#datepickerend").val();
             console.log("selectedGraphic:", selectedGraphic);
             if (selectedGraphic == 1) {
+
+                if (!startDate || !endDate) {
+                    alert("Tarih aralığı seçmeniz gerekmektedir.");
+                    return;
+                }
+
                 // daily by country - has startdate and enddate-
                 $.post('https://localhost:44314/data/getDailyByCountry/', { CountryCode: ulkeAdi, StartDate: startDate, EndDate: endDate }, function (data, textStatus, jqXHR) {
                     var parsedValue = JSON.parse(data);
@@ -119,6 +140,7 @@
                         alert("HATA OLUSTU!");
                         return;
                     }
+
 
                     var arr = parsedValue.Value;
 
@@ -180,7 +202,7 @@
 
                         //var newArray = dizi.map(Element => Element.Active);
                         var arr = parsedValue;
-                        console.log("Now here i am!", arr.Value);
+                        //console.log("Now here i am!", arr.Value);
                         var caseArr = [];
 
                         
@@ -259,10 +281,10 @@
                     alert("HATA OLUSTU!");
                 }
                 var dataArray = parsedValue.Value;
-                console.log("vuhuuu!", dataArray);
+               // console.log("vuhuuu!", dataArray);
             });
 
-            console.log("TIKLADIN!");
+            //console.log("TIKLADIN!");
 
             //var chart = Highcharts.chart('container2', {
             //    xAxis: {

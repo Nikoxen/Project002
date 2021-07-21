@@ -1,6 +1,9 @@
 ﻿body {
     padding-top: 50px;
     padding-bottom: 20px;
+    background-position: center;
+    background-repeat: no-repeat;
+    
 }
 
 /* Set padding to keep content from hitting the edges */
