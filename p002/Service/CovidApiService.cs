@@ -67,6 +67,28 @@ namespace p002.Service
             return response;
         }
 
+        public List<ByCountryTotalAllStatus> ByCountryTotalAllStatus(DailyByCountryRequest request)
+        {
+            var response = new List<ByCountryTotalAllStatus>();
+            var stringBuilder = new StringBuilder();
+            var dictionary = new Dictionary<string, string>()
+            {
+                { "country", request.CountryCode }
+            };
+            var nameValueCollection = new NameValueCollection()
+            {
+                { "from", request.StartDate.ToString("yyyy-MM-ddTHH:mm:ssZ") },
+                { "to", request.EndDate.ToString("yyyy-MM-ddTHH:mm:ssZ") },
+            };
+            stringBuilder.Append(BaseApiURL);
+            stringBuilder.Append("/total");
+            AppendEndpointSection(dictionary, stringBuilder);
+            ToQueryString(nameValueCollection, stringBuilder);
+            response = GetApiResponse<List<ByCountryTotalAllStatus>>(stringBuilder.ToString());
+            return response;
+        }
+
+
         private T GetApiResponse<T>(string url)
         {
             try

@@ -10,6 +10,7 @@ namespace p002.Models.Data
         public string CountryCode { get; set; }
         public DateTime StartDate { get; set; }
         public DateTime EndDate { get; set; }
+        public GraphTypes GraphType { get; set; }
     }
 
     public class DailyByCountryApiResponse
@@ -22,6 +23,8 @@ namespace p002.Models.Data
     {
         
     }
+
+    public class ByCountryTotalAllStatusResponse : BaseResponse<List<ByCountryTotalAllStatus>> { }
 
     public class SingleCountry
     {
@@ -46,7 +49,11 @@ namespace p002.Models.Data
     public class GetLiveByCountryAllStatusRequest
     {
         public string CountryCode { get; set; }
+        public GraphTypes GraphType { get; set; }
     }
 
     public class GetLiveByCountryAllStatusResponse : BaseResponse<List<GetLiveByCountryAllStatus>> { }
+
+    public class ByCountryTotalAllStatus : GetLiveByCountryAllStatus { }
+
 }

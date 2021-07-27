@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using p002.Models;
 using p002.Models.Data;
 using p002.Service;
 using System;
@@ -43,19 +44,24 @@ namespace p002.Controllers
             }
             else{
                 List<int> caseList = new List<int>();
+
                 for (int i = 1; i < response.Value.Count - 1; i++)
                 {
-                    var deneme = i;
-                    var curr = response.Value[i].Cases;
-                    var prev = response.Value[i-1].Cases;
                     caseList.Add(response.Value[i].Cases - response.Value[i - 1].Cases);
                 }
                 for (int i = 1; i < response.Value.Count - 1; i++)
                 {
                     response.Value[i].Cases = caseList[i - 1];
                 }
-
-                response.Value = response.Value.GetRange(1, response.Value.Count - 2);
+                if (response.Value.Count<2)
+                {
+                    response.ErrorList.Add("Yeterli veri bulunamadi!");
+                }
+                else
+                {
+                    response.Value = response.Value.GetRange(1, response.Value.Count - 2);
+                }
+                
             }
             return Json(JsonConvert.SerializeObject(response), JsonRequestBehavior.AllowGet);
         }
@@ -79,12 +85,142 @@ namespace p002.Controllers
         public ActionResult GetLiveByCountryAllStatus(GetLiveByCountryAllStatusRequest request)
         {
             var response = new GetLiveByCountryAllStatusResponse();
+
             response.Value = _covidApiService.GetLiveByCountryAllStatuses(request);
+            if (response.Value == null || response.Value.Count == 0)
+            {
+                response.ErrorList.Add("Bir hata yasandi!");
+            }
+            else
+            {
+                var returnList = new List<GetLiveByCountryAllStatus>();
+
+                response.Value.ForEach(val =>
+                {
+                    var foundedVal = returnList.FindIndex(r => r.Date.Date == val.Date.Date);
+                    if (foundedVal != -1)
+                    {
+                        returnList.ElementAt(foundedVal).Active += val.Active;
+                        returnList.ElementAt(foundedVal).Deaths += val.Deaths;
+                        returnList.ElementAt(foundedVal).Recovered += val.Recovered;
+                    }
+                    else
+                    {
+                        returnList.Add(val);
+                    }
+                });
+
+                if(request.GraphType == GraphTypes.LastThirtyDaysDeath || request.GraphType == GraphTypes.LastThirtyDaysRecovery)
+                {
+                    List<GetLiveByCountryAllStatus> caseList = new List<GetLiveByCountryAllStatus>();
+
+                    for (int i = 1; i < returnList.Count; i++)
+                    {
+                        caseList.Add(new Models.Data.GetLiveByCountryAllStatus
+                        {
+                            Active = returnList[i].Active - returnList[i - 1].Active,
+                            Recovered = returnList[i].Recovered - returnList[i - 1].Recovered,
+                            Deaths = returnList[i].Deaths - returnList[i - 1].Deaths
+                        });
+                    }
+                    for (int i = 1; i < response.Value.Count && 1 >=response.Value.Count; i++)
+                    {
+                        returnList[i].Active = caseList[i - 1].Active;
+                        returnList[i].Recovered = caseList[i - 1].Recovered;
+                        returnList[i].Deaths = caseList[i - 1].Deaths;
+                    }
+                    if (response.Value.Count < 1)
+                    {
+                        response.ErrorList.Add("Yeterli veri bulunamadi!");
+                    }
+                    else
+                    {
+                        response.Value = returnList.GetRange(1, response.Value.Count - 1);
+                    }
+                }
+                else
+                {
+                    response.Value = returnList;
+                }
+
+                var deneme = "";
+            }
+            return Json(JsonConvert.SerializeObject(response), JsonRequestBehavior.AllowGet);
+        }
+
+        [HttpPost]
+        [ActionName("getTotalDailyByCountry")]
+        public ActionResult GetTotalDailyByCountry(DailyByCountryRequest request)
+        {
+            var response = new ByCountryTotalAllStatusResponse();
+            request.StartDate = request.StartDate.Date.AddDays(-1);
+            request.StartDate.Subtract(TimeSpan.FromDays(1));
+            if (request.EndDate.Date < DateTime.Now.Date)
+            {
+                request.EndDate.AddDays(1);
+            }
+            response.Value = _covidApiService.ByCountryTotalAllStatus(request);
+
+
             if (response.Value == null)
             {
                 response.ErrorList.Add("Bir hata yasandi!");
             }
+            else
+            {
+                var returnList = new List<ByCountryTotalAllStatus>();
+
+                response.Value.ForEach(val =>
+                {
+                    var foundedVal = returnList.FindIndex(r => r.Date.Date == val.Date.Date);
+                    if (foundedVal != -1)
+                    {
+                        returnList.ElementAt(foundedVal).Active += val.Active;
+                        returnList.ElementAt(foundedVal).Deaths += val.Deaths;
+                        returnList.ElementAt(foundedVal).Recovered += val.Recovered;
+                    }
+                    else
+                    {
+                        returnList.Add(val);
+                    }
+                });
+
+                if (request.GraphType == GraphTypes.AllDaysDeath || request.GraphType == GraphTypes.AllDaysRecovery)
+                {
+                    var caseList = new List<ByCountryTotalAllStatus>();
+
+                    for (int i = 1; i < response.Value.Count; i++)
+                    {
+                        caseList.Add(new Models.Data.ByCountryTotalAllStatus
+                        {
+                            Active = response.Value[i].Active - response.Value[i - 1].Active,
+                            Recovered = response.Value[i].Recovered - response.Value[i - 1].Recovered,
+                            Deaths = response.Value[i].Deaths - response.Value[i - 1].Deaths
+                        });
+                    }
+                    for (int i = 1; i < response.Value.Count; i++)
+                    {
+                        response.Value[i].Active = caseList[i - 1].Active;
+                        response.Value[i].Recovered = caseList[i - 1].Recovered;
+                        response.Value[i].Deaths = caseList[i - 1].Deaths;
+                    }
+                    if (response.Value.Count < 1)
+                    {
+                        response.ErrorList.Add("Yeterli veri bulunamadi!");
+                    }
+                    else
+                    {
+                        response.Value = returnList.GetRange(1, response.Value.Count - 1);
+                    }
+                   
+                }
+                else
+                {
+                    response.Value = returnList;
+                }
+            }
             return Json(JsonConvert.SerializeObject(response), JsonRequestBehavior.AllowGet);
         }
+
     }
 }

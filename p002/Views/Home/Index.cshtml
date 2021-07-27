@@ -25,12 +25,15 @@
                             </select>
                         </div>
                         <div class="col-6">
-                            <select class="form-select " id="graphic-picker" aria-label="Default select example" style="width:600px;height:30px">
-                                <option selected>Grafik Seciniz</option>
+                            <select class="form-select " id="graphic-picker" aria-label="Default select example" value="-1" style="width:600px;height:30px">
+                                <option value="-1">Grafik Seciniz</option>
                                 <option value="1">Günlük Vaka Sayıları</option>
                                 <option value="2">Son 30 gün Aktif Vaka Sayısı</option>
                                 <option value="3">Son 30 gün iyileşen Sayısı</option>
                                 <option value="4">Son 30 gün Ölüm Sayısı</option>
+                                <option value="5">Kümülatif Aktif Vaka Sayısı</option>
+                                <option value="6">Kümülatif İyileşen Sayısı</option>
+                                <option value="7">Kümülatif Ölüm Sayısı</option>
                             </select>
                         </div>
                     </div>
@@ -107,7 +110,8 @@
 <script type="text/javascript">
     $(document).ready(function () {
         $("#graphic-picker")[0].addEventListener("change", function (e) {
-            if(["1"].indexOf(e.target.value) != -1)
+            console.log("merhaba");
+            if(["1", "5", "6", "7"].indexOf(e.target.value) != -1)
             {
                 document.getElementById("datepickerstart").disabled = false;
                 document.getElementById("datepickerend").disabled = false;
@@ -119,13 +123,14 @@
         });
 
 
-        console.log($("#btn"));
+        
         $("#btn").click(function () {
+            
             var selectedGraphic = $("#graphic-picker").val();
             var ulkeAdi = $('#ulke option:selected').val();
             var startDate = $("#datepickerstart").val();
             var endDate = $("#datepickerend").val();
-            console.log("selectedGraphic:", selectedGraphic);
+            //console.log("selectedGraphic:", selectedGraphic);
             if (selectedGraphic == 1) {
 
                 if (!startDate || !endDate) {
@@ -135,12 +140,12 @@
 
                 // daily by country - has startdate and enddate-
                 $.post('https://localhost:44314/data/getDailyByCountry/', { CountryCode: ulkeAdi, StartDate: startDate, EndDate: endDate }, function (data, textStatus, jqXHR) {
+                   
                     var parsedValue = JSON.parse(data);
                     if (!parsedValue.Status || !parsedValue.Value) {
-                        alert("HATA OLUSTU!");
+                        alert(parsedValue.ErrorList[0]);
                         return;
                     }
-
 
                     var arr = parsedValue.Value;
 
@@ -170,7 +175,7 @@
                         }, true);
                     }*/
 
-                    console.log("points",chart.series[0]);
+                    console.log("points", chart.series[0]);
 
                     chart.redraw();
                 });
@@ -178,7 +183,12 @@
 
             } else if (selectedGraphic == 2 || selectedGraphic == 3 || selectedGraphic == 4) {
 
-                const data = { CountryCode: ulkeAdi, StartDate: $("#datepickerstart").val(), EndDate: $("#datepickerend").val() };
+                const data = {
+                    CountryCode: ulkeAdi,
+                    StartDate: $("#datepickerstart").val(),
+                    EndDate: $("#datepickerend").val(),
+                    GraphType: selectedGraphic
+                };
                 fetch('https://localhost:44314/data/getLiveByCountryAllStatus/', {
                     method: 'POST', // or 'PUT'
                     headers: {
@@ -188,10 +198,12 @@
                 })
                     .then(response => response.json())
                     .then(data => {
+                       // console.log("got the data", data);
                         var parsedValue = JSON.parse(data);
 
                         if (!parsedValue.Status) {
-                            alert(arr.ErrorList[0]);
+                            alert(parsedValue.ErrorList[0]);
+                           
                             return;
                         }
 
@@ -205,7 +217,7 @@
                         //console.log("Now here i am!", arr.Value);
                         var caseArr = [];
 
-                        
+
                         var options = {
                             chart: {
                                 renderTo: 'container2',
@@ -270,120 +282,98 @@
                     .catch((error) => {
                         console.error('Error:', error);
                     });
-            } 
-
-
-            $.post('https://localhost:44314/data/getLiveByCountryAllStatus/', { CountryCode: ulkeAdi }, function (data) {
-
-
-                var parsedValue = JSON.parse(data);
-                if (!parsedValue.Status) {
-                    alert("HATA OLUSTU!");
+            } else if (selectedGraphic == 5 || selectedGraphic == 6 || selectedGraphic == 7) {
+                if (!startDate || !endDate) {
+                    alert("Tarih aralığı seçmeniz gerekmektedir.");
+                    return;
                 }
-                var dataArray = parsedValue.Value;
-               // console.log("vuhuuu!", dataArray);
-            });
 
-            //console.log("TIKLADIN!");
+                const data = {
+                    CountryCode: ulkeAdi,
+                    StartDate: $("#datepickerstart").val(),
+                    EndDate: $("#datepickerend").val(),
+                    GraphType: selectedGraphic
+                };
+                fetch('https://localhost:44314/data/getTotalDailyByCountry/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        //console.log("got the data", data);
+                        var parsedValue = JSON.parse(data);
 
-            //var chart = Highcharts.chart('container2', {
-            //    xAxis: {
-            //        type: 'datetime',
-            //    },
-            //    yAxis: {
-            //        accessibility: {
-            //            rangeDescription: 'Range: 1 to 1000'
-            //        }
-            //    },
+                        if (!parsedValue.Status) {
+                            alert(parsedValue.ErrorList[0]);
+                            return;
+                        }
 
-            //    title: {
-            //        text: 'yeni grafik'
+                        if (!parsedValue.Value) {
+                            alert("Belirtilen aralığa uygun veri bulunamadı.");
+                            return;
+                        }
 
-            //    },
-            //    series: [{
-            //        name: 'Covid Vaka Sayilari',
-            //        data: null
+                        //var newArray = dizi.map(Element => Element.Active);
+                        var arr = parsedValue;
+                        //console.log("Now here i am!", arr.Value);
+                        var caseArr = [];
 
-            //    }]
-            //});
 
+                        var options = {
+                            chart: {
+                                renderTo: 'container2',
+                                type: 'spline'
+                            },
+                            series: [{}]
+                        };
+
+
+
+                        if (selectedGraphic == 5) {
+                            for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Active]);
+                            }
+                        } else if (selectedGraphic == 6) {
+                            for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Recovered]);
+                            }
+                        } else if (selectedGraphic == 7) {
+                            for (var i = 0; i < arr.Value.length; i++) {
+                                caseArr.push([arr.Value[i].Date, arr.Value[i].Deaths]);
+                            }
+                        }
+
+                        console.log("caseArr:", caseArr);
+                        options.series[0].data = caseArr;
+                        var chart = new Highcharts.Chart(options);
+
+
+                        console.log("points", chart.series[0]);
+
+                        chart.redraw();
+                        /*Highcharts.chart('container2').data.series[0].xAxis(data)*/
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+
+
+           
             
 
             
 
-        
-            //(async () => {
-            //    const rawResponse = await fetch('https://localhost:44314/data/getDailyByCountry/', {
-            //        method: 'POST',
-            //        headers: {
-            //            'Accept': 'application/json',
-            //            'Content-Type': 'application/json'
-            //        },
-            //        body: JSON.stringify({})
-            //    });
-            //    const content = await rawResponse.stringify();
-
-            //    console.log(content);
-            //})();
-          
-           // $.post('https://localhost:44314/data/getDailyByCountry/', { CountryCode: ulkeAdi }, function (data) {
-
-
-                //var parsedValue = JSON.parse(data);
-                //if (!parsedValue.Status) {
-                //    alert("HATA OLUSTU!");
-                //}
-               // var dataArray = parsedValue.Value;
-               // console.log("vuhuuu!", dataArray);
-               
-
-                //for (var i = 0; i < 5; i++)
-                //{
-                //    chart.series[0].addPoint({ x: dataArray[i].Cases, y: dataArray[i].Date });
-                //}
-                ///*chart.xAxis = [1, 2, 3, 4];
-                //chart.yAxis = [1, 2, 3, 4];*/
-                ////chart.redraw();
-                //console.log("chart", chart);
-           // });
         });
 
 
     });
 
 
-    Highcharts.chart('container', {
-
-        title: {
-            text: 'Logarithmic axis demo'
-        },
-
-        xAxis: {
-            tickInterval: 1,
-            type: 'logarithmic',
-            accessibility: {
-                rangeDescription: 'Range: 1 to 10'
-            }
-        },
-
-        yAxis: {
-            type: 'logarithmic',
-            minorTickInterval: 0.1,
-            accessibility: {
-                rangeDescription: 'Range: 0.1 to 1000'
-            }
-        },
-
-        tooltip: {
-            headerFormat: '<b>{series.name}</b><br />',
-            pointFormat: 'x = {point.x}, y = {point.y}'
-        },
-
-        series: [{
-            data: [1, 2, 4, 8, 16, 32, 64, 128, 256, 512],
-            pointStart: 1
-        }]
-    });
+   
 </script>
 
 
