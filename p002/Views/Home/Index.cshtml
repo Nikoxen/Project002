@@ -31,9 +31,9 @@
                                 <option value="2">Son 30 gün Aktif Vaka Sayısı</option>
                                 <option value="3">Son 30 gün iyileşen Sayısı</option>
                                 <option value="4">Son 30 gün Ölüm Sayısı</option>
-                                <option value="5">Kümülatif Aktif Vaka Sayısı</option>
-                                <option value="6">Kümülatif İyileşen Sayısı</option>
-                                <option value="7">Kümülatif Ölüm Sayısı</option>
+                                <option value="5">Aktif Vaka Sayısı</option>
+                                <option value="6">İyileşen Sayısı</option>
+                                <option value="7">Ölüm Sayısı</option>
                             </select>
                         </div>
                     </div>
@@ -154,7 +154,10 @@
                             renderTo: 'container2',
                             type: 'spline'
                         },
-                        series: [{}]
+                        title: {
+                            text: 'Covid-19 Istatistikleri'
+                        },
+                        series: [{ name: 'Tarihe dayali veriler' }]
                     };
 
                     var activeCases = [];
@@ -223,7 +226,10 @@
                                 renderTo: 'container2',
                                 type: 'spline'
                             },
-                            series: [{}]
+                            title: {
+                                text: 'Covid-19 Istatistikleri'
+                            },
+                            series: [{ name: 'Tarihe dayali veriler' }]
                         };
 
 
@@ -327,7 +333,11 @@
                                 renderTo: 'container2',
                                 type: 'spline'
                             },
-                            series: [{}]
+                            title: {
+                                text: 'Covid-19 Istatistikleri'
+                            },
+                            series: [{ name: 'Tarihe dayali veriler'}]
+                            
                         };
 
 
