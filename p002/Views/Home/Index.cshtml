@@ -2,17 +2,12 @@
 @{
     ViewBag.Title = "Grafikler";
 }
-
 <h2>Ülkelere göre grafikler</h2>
-<br />
-<br />
+<br /><br />
 <script src="https://code.highcharts.com/highcharts.js"></script>
 <script src="https://code.highcharts.com/modules/exporting.js"></script>
 <script src="https://code.highcharts.com/modules/export-data.js"></script>
 <script src="https://code.highcharts.com/modules/accessibility.js"></script>
-
-
-
 <div class="container">
     <div class="row">
         <div class="col-sm-9 col-md-9 col-lg-9">
@@ -52,8 +47,6 @@
                         </div>
                     </div>
                 </div>
-
-                
             </div>
         </div>
         <div class="col-3" style="width:200px">
@@ -62,15 +55,7 @@
     </div>
 </div>
 <figure class="highcharts-figure">
-    @*<div id="container"></div>*@
-    @*<p class="highcharts-description">
-            This chart shows the use of a logarithmic y-axis. Logarithmic axes can
-            be useful when dealing with data with spikes or large value gaps,
-            as they allow variance in the smaller values to remain visible.
-        </p>*@
     <div id="container2">
-        
-
     </div>
 </figure>
 
@@ -103,9 +88,7 @@
 
     });
 </script>
-<script type="text/javascript">
 
-</script>
 
 <script type="text/javascript">
     $(document).ready(function () {
@@ -130,14 +113,13 @@
             var ulkeAdi = $('#ulke option:selected').val();
             var startDate = $("#datepickerstart").val();
             var endDate = $("#datepickerend").val();
-            //console.log("selectedGraphic:", selectedGraphic);
+
             if (selectedGraphic == 1) {
 
                 if (!startDate || !endDate) {
                     alert("Tarih aralığı seçmeniz gerekmektedir.");
                     return;
                 }
-
                 // daily by country - has startdate and enddate-
                 $.post('https://localhost:44314/data/getDailyByCountry/', { CountryCode: ulkeAdi, StartDate: startDate, EndDate: endDate }, function (data, textStatus, jqXHR) {
                    
@@ -146,9 +128,7 @@
                         alert(parsedValue.ErrorList[0]);
                         return;
                     }
-
                     var arr = parsedValue.Value;
-
                     var options = {
                         chart: {
                             renderTo: 'container2',
@@ -159,30 +139,15 @@
                         },
                         series: [{ name: 'Tarihe dayali veriler' }]
                     };
-
                     var activeCases = [];
-
                     for (var i = 0; i < arr.length; i++) {
                         console.log("patates2,", arr[i]);
                         activeCases.push([arr[i].Date, arr[i].Cases]);
                     }
-
                     options.series[0].data = activeCases;
-
                     var chart = new Highcharts.Chart(options);
-
-                    /*for (var i = 0; i < arr.length; i++) {
-                        chart.series[0].addPoint({
-                            x: arr[i].Date,
-                            y: arr[i].Cases
-                        }, true);
-                    }*/
-
-                    console.log("points", chart.series[0]);
-
                     chart.redraw();
                 });
-
 
             } else if (selectedGraphic == 2 || selectedGraphic == 3 || selectedGraphic == 4) {
 
@@ -201,26 +166,18 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                       // console.log("got the data", data);
                         var parsedValue = JSON.parse(data);
-
                         if (!parsedValue.Status) {
                             alert(parsedValue.ErrorList[0]);
                            
                             return;
                         }
-
                         if (!parsedValue.Value) {
                             alert("Belirtilen aralığa uygun veri bulunamadı.");
                             return;
                         }
-
-                        //var newArray = dizi.map(Element => Element.Active);
                         var arr = parsedValue;
-                        //console.log("Now here i am!", arr.Value);
                         var caseArr = [];
-
-
                         var options = {
                             chart: {
                                 renderTo: 'container2',
@@ -231,57 +188,24 @@
                             },
                             series: [{ name: 'Tarihe dayali veriler' }]
                         };
-
-
-
                         if (selectedGraphic == 2) {
                             // last 30 days active cases -does not have startdate and enddate-
-
                             for (var i = 0; i < arr.Value.length; i++) {
                                 caseArr.push([arr.Value[i].Date, arr.Value[i].Active]);
                             }
-
-                            /*for (var i = 0; i < arr.Value.length; i++) {
-                                chart.series[0].addPoint({
-                                    x: arr.Value[i].Date,
-                                    y: arr.Value[i].Active
-                                }, false);
-
-                            }*/
                         } else if (selectedGraphic == 3) {
                             // last 30 days recovery -does not have startdate and enddate-
                             for (var i = 0; i < arr.Value.length; i++) {
                                 caseArr.push([arr.Value[i].Date, arr.Value[i].Recovered]);
-                            }/*
-                            for (var i = 0; i < arr.Value.length; i++) {
-                                chart.series[0].addPoint({
-
-                                    x: arr.Value[i].Date,
-                                    y: arr.Value[i].Recovered
-                                }, false);
-
-                            }*/
+                            }
                         } else if (selectedGraphic == 4) {
                             // last 30 days deaths -does not have startdate and enddate-
                             for (var i = 0; i < arr.Value.length; i++) {
                                 caseArr.push([arr.Value[i].Date, arr.Value[i].Deaths]);
-                            }/*
-                            for (var i = 0; i < arr.Value.length; i++) {
-                                chart.series[0].addPoint({
-
-                                    x: arr.Value[i].Date,
-                                    y: arr.Value[i].Deaths
-                                }, false);
-
-                            }*/
+                            }
                         }
-                        console.log("caseArr:", caseArr);
                         options.series[0].data = caseArr;
                         var chart = new Highcharts.Chart(options);
-
-
-                        console.log("points", chart.series[0]);
-
                         chart.redraw();
                         /*Highcharts.chart('container2').data.series[0].xAxis(data)*/
                     })
@@ -293,7 +217,6 @@
                     alert("Tarih aralığı seçmeniz gerekmektedir.");
                     return;
                 }
-
                 const data = {
                     CountryCode: ulkeAdi,
                     StartDate: $("#datepickerstart").val(),
@@ -309,7 +232,6 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                        //console.log("got the data", data);
                         var parsedValue = JSON.parse(data);
 
                         if (!parsedValue.Status) {
@@ -321,13 +243,8 @@
                             alert("Belirtilen aralığa uygun veri bulunamadı.");
                             return;
                         }
-
-                        //var newArray = dizi.map(Element => Element.Active);
                         var arr = parsedValue;
-                        //console.log("Now here i am!", arr.Value);
                         var caseArr = [];
-
-
                         var options = {
                             chart: {
                                 renderTo: 'container2',
@@ -339,8 +256,6 @@
                             series: [{ name: 'Tarihe dayali veriler'}]
                             
                         };
-
-
 
                         if (selectedGraphic == 5) {
                             for (var i = 0; i < arr.Value.length; i++) {
@@ -355,13 +270,8 @@
                                 caseArr.push([arr.Value[i].Date, arr.Value[i].Deaths]);
                             }
                         }
-
-                        console.log("caseArr:", caseArr);
                         options.series[0].data = caseArr;
                         var chart = new Highcharts.Chart(options);
-
-
-                        console.log("points", chart.series[0]);
 
                         chart.redraw();
                         /*Highcharts.chart('container2').data.series[0].xAxis(data)*/
@@ -371,19 +281,8 @@
                     });
             }
 
-
-           
-            
-
-            
-
         });
-
-
     });
-
-
-   
 </script>
 
 
